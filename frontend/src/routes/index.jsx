@@ -1,5 +1,8 @@
+import { lazy } from "react";
 import App from "../App";
 import Home from "../Pages/Home";
+
+const Assistant = lazy(() => import("../Pages/Assistant"));
 
 const routes = [
   {
@@ -9,6 +12,10 @@ const routes = [
       {
         index: true,
         element: <Home />,
+      },
+      {
+        path: "/assistant",
+        element: <Assistant />,
       },
     ],
   },

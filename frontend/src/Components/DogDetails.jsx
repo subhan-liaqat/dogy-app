@@ -4,13 +4,13 @@ import logo from "../assets/logo.svg";
 import { cn } from "../lib/utils";
 
 export default function DogDetails() {
-  const [sensivity, setSensitivity] = useState({
+  const [sensitivity, setSensitivity] = useState({
     noise: false,
     car: false,
     none: false,
   });
-
-  const [eneryLevel, setEnergyLevel] = useState("");
+  const [submissionMessage, setSubmissionMessage] = useState("");
+  const [energyLevel, setEnergyLevel] = useState("");
 
   const handleEnergyLevelChange = (event) => {
     setEnergyLevel(event.target.value);
@@ -26,8 +26,32 @@ export default function DogDetails() {
     setSensitivity((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleFormSubmit = (event) => {
+  const handleFormSubmit = async (event) => {
     event.preventDefault();
+
+    const requestData = {
+      dogSize,
+      energyLevel,
+      sensitivity
+    };
+
+    try {
+      const response = await fetch('/submit-dog-details', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (response.ok) {
+        setSubmissionMessage('Dog details submitted successfully!');
+      } else {
+        throw new Error('Failed to submit dog details');
+      }
+    } catch (error) {
+      setSubmissionMessage('Error: ' + error.message);
+    }
   };
   return (
     <>
@@ -99,7 +123,7 @@ export default function DogDetails() {
                 id="low"
                 value="low"
                 className="mr-2"
-                checked={eneryLevel === "low"}
+                checked={energyLevel === "low"}
                 onChange={handleEnergyLevelChange}
               />
               low
@@ -111,7 +135,7 @@ export default function DogDetails() {
                 id="medium"
                 value="medium"
                 className="mr-2"
-                checked={eneryLevel === "medium"}
+                checked={energyLevel === "medium"}
                 onChange={handleEnergyLevelChange}
               />
               medium
@@ -123,7 +147,7 @@ export default function DogDetails() {
                 id="high"
                 value="high"
                 className="mr-2"
-                checked={eneryLevel === "high"}
+                checked={energyLevel === "high"}
                 onChange={handleEnergyLevelChange}
               />
               high
@@ -139,7 +163,7 @@ export default function DogDetails() {
               onClick={() => toggleSensitivity("noise")}
               className={cn(
                 reactiveButtonStyles,
-                sensivity.noise ? "bg-state-success/60" : ""
+                sensitivity.noise ? "bg-state-success/60" : ""
               )}
               type="button"
             >
@@ -151,7 +175,7 @@ export default function DogDetails() {
               onClick={() => toggleSensitivity("car")}
               className={cn(
                 reactiveButtonStyles,
-                sensivity.car ? "bg-state-success/60" : ""
+                sensitivity.car ? "bg-state-success/60" : ""
               )}
               type="button"
             >
@@ -163,7 +187,7 @@ export default function DogDetails() {
               onClick={() => toggleSensitivity("none")}
               className={cn(
                 reactiveButtonStyles,
-                sensivity.none ? "bg-state-success/60" : ""
+                sensitivity.none ? "bg-state-success/60" : ""
               )}
             >
               Non-reactive
@@ -178,6 +202,9 @@ export default function DogDetails() {
         >
           Plan your work
         </button>
+        {submissionMessage && (
+          <p className="text-green-500">{submissionMessage}</p>
+        )}
       </form>
     </>
   );

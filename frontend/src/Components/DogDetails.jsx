@@ -1,7 +1,11 @@
-import { SquarePlus } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon, SquarePlus } from "lucide-react";
 import { useState } from "react";
 import logo from "../assets/logo.svg";
 import { cn } from "../lib/utils";
+import { Button } from "./ui/Button";
+import { Calendar } from "./ui/Calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/Popover";
 
 export default function DogDetails() {
   const [sensitivity, setSensitivity] = useState({
@@ -17,6 +21,8 @@ export default function DogDetails() {
   };
 
   const [dogSize, setDogSize] = useState("");
+
+  const [age, setAge] = useState("");
 
   const handleDogSizeChange = (event) => {
     setDogSize(event.target.value);
@@ -112,6 +118,10 @@ export default function DogDetails() {
           </div>
         </fieldset>
 
+        <div className="mt-5 space-y-2">
+          <p>How old is your dog?</p>
+          <DogAge age={age} setAge={setAge} />
+        </div>
         <fieldset className="my-5">
           <legend>What energy level is your dog?</legend>
 
@@ -200,7 +210,7 @@ export default function DogDetails() {
           className="mt-auto bg-state-success border-2 border-[#A4BA60] text-foreground-col font-medium md:text-lg rounded-xl"
           type="submit"
         >
-          Plan your work
+          Plan your walk
         </button>
         {submissionMessage && (
           <p className="text-green-500">{submissionMessage}</p>
@@ -209,6 +219,23 @@ export default function DogDetails() {
     </>
   );
 }
+
+const DogAge = ({ age, setAge }) => {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant={"outline"} className={cn("w-fit gap-5")}>
+          {age ? format(age, "PPP") : <span>Birthdate</span>}
+          <CalendarIcon className="" />
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent>
+        <Calendar mode="single" selected={age} onSelect={setAge} initialFocus />
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 const reactiveButtonStyles =
   "flex items-center gap-2 bg-[#F8F3DF] border-2 border-[#F2EBD8] rounded-[20px] px-2 py-1";

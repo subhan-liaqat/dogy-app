@@ -1,40 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { Map, Marker, useMarkerRef } from "@vis.gl/react-google-maps";
+import { Map } from "@vis.gl/react-google-maps";
+import useCoordinates from "../../hooks/useCoordinates";
+import Loader from "../Loader";
 
 export default function StaticMap() {
-  const [markerRef, marker] = useMarkerRef();
-  const [currentLocation, setCurrentLocation] = useState(null);
+  const { coordinates, status } = useCoordinates();
+  if (status === "pending") {
+    return <Loader />;
+  }
 
-  const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setCurrentLocation({ lat: latitude, lng: longitude });
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-    }
-  };
-
-  useEffect(() => {
-    getCurrentLocation();
-  }, []);
+  if (status === "error") {
+    return (
+      <p className="h-full flex items-center justify-center">
+        unable to get location. please refresh to try again
+      </p>
+    );
+  }
 
   return (
     <Map
       className={"w-full h-[100vh] md:h-full"}
-      defaultCenter={{ lat: 40.54992, lng: 44.54992 }}
+      defaultCenter={{ lat: coordinates.latitude, lng: coordinates.longitude }}
       defaultZoom={3}
       gestureHandling={"greedy"}
       disableDefaultUI={true}
-    >
-      {/* Render the Marker component with the markerRef */}
-      {currentLocation && (
-        <Marker ref={markerRef} position={currentLocation} />
-      )}
-    </Map>
+      zoom={15}
+    />
   );
 }

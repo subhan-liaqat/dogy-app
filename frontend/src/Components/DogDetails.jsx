@@ -1,22 +1,40 @@
-import { SquarePlus } from "lucide-react";
-import { useState } from "react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon, SquarePlus } from "lucide-react";
+import { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import logo from "../assets/logo.svg";
-import { cn } from "../lib/utils";
+import useCoordinates from "../hooks/useCoordinates";
+import { calculateAge, cn } from "../lib/utils";
+import Loader from "./Loader";
+import { DogyContext } from "./map/DogyContext";
+import { Button } from "./ui/Button";
+import { Calendar } from "./ui/Calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/Popover";
+
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 export default function DogDetails() {
+  const { coordinates } = useCoordinates();
+
   const [sensitivity, setSensitivity] = useState({
     noise: false,
     car: false,
     none: false,
   });
-  const [submissionMessage, setSubmissionMessage] = useState("");
+  const [pending, setPending] = useState(false);
   const [energyLevel, setEnergyLevel] = useState("");
+
+  const navigate = useNavigate();
 
   const handleEnergyLevelChange = (event) => {
     setEnergyLevel(event.target.value);
   };
 
   const [dogSize, setDogSize] = useState("");
+
+  const [age, setAge] = useState("");
+  const { setData } = useContext(DogyContext);
 
   const handleDogSizeChange = (event) => {
     setDogSize(event.target.value);
@@ -28,29 +46,48 @@ export default function DogDetails() {
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
+    if (!age || !dogSize || !energyLevel) {
+      toast.error(
+        "please provide information about your dog's age,size and energy level"
+      );
+      return;
+    }
+
+    const computedAge = calculateAge(age);
 
     const requestData = {
-      dogSize,
-      energyLevel,
-      sensitivity
+      DogeSize: dogSize,
+      DogyEnergyLevel: energyLevel,
+      DogySensitivity: sensitivity,
+      DogyAge: computedAge.toString(),
+      Latitude: coordinates.latitude,
+      Longitude: coordinates.longitude,
     };
 
     try {
-      const response = await fetch('/submit-dog-details', {
-        method: 'POST',
+      setPending(true);
+      const response = await fetch(`${baseUrl}dog-profile/`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
         },
         body: JSON.stringify(requestData),
       });
 
       if (response.ok) {
-        setSubmissionMessage('Dog details submitted successfully!');
+        const data = await response.json();
+
+        setData(data);
+        navigate("/assistant");
       } else {
-        throw new Error('Failed to submit dog details');
+        console.log(await response.json());
+        throw new Error("Failed to submit dog details");
       }
     } catch (error) {
-      setSubmissionMessage('Error: ' + error.message);
+      toast.error("Error: failed to submit dog information");
+    } finally {
+      setPending(false);
     }
   };
   return (
@@ -112,6 +149,10 @@ export default function DogDetails() {
           </div>
         </fieldset>
 
+        <div className="mt-5 space-y-2">
+          <p>How old is your dog?</p>
+          <DogAge age={age} setAge={setAge} />
+        </div>
         <fieldset className="my-5">
           <legend>What energy level is your dog?</legend>
 
@@ -155,7 +196,7 @@ export default function DogDetails() {
           </div>
         </fieldset>
 
-        <div className="space-y-3">
+        <div className="space-y-3 mb-6">
           <p className="">Is your dog reactive?</p>
 
           <div className="flex items-center gap-2 flex-wrap">
@@ -189,6 +230,7 @@ export default function DogDetails() {
                 reactiveButtonStyles,
                 sensitivity.none ? "bg-state-success/60" : ""
               )}
+              type="button"
             >
               Non-reactive
               <SquarePlus className="" color="#021927" size={"13.3px"} />
@@ -197,18 +239,33 @@ export default function DogDetails() {
         </div>
 
         <button
-          className="mt-auto bg-state-success border-2 border-[#A4BA60] text-foreground-col font-medium md:text-lg rounded-xl"
+          className="mt-auto bg-state-success border-2 border-[#A4BA60] text-foreground-col font-medium md:text-lg flex gap-2 items-center rounded-xl justify-center"
           type="submit"
         >
-          Plan your work
+          {pending ? "Planning..." : " Plan your walk"}
+          {pending ? <Loader /> : null}
         </button>
-        {submissionMessage && (
-          <p className="text-green-500">{submissionMessage}</p>
-        )}
       </form>
     </>
   );
 }
+
+const DogAge = ({ age, setAge }) => {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant={"outline"} className={cn("w-fit gap-5")}>
+          {age ? format(age, "PPP") : <span>Birthdate</span>}
+          <CalendarIcon className="" />
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent>
+        <Calendar mode="single" selected={age} onSelect={setAge} initialFocus />
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 const reactiveButtonStyles =
   "flex items-center gap-2 bg-[#F8F3DF] border-2 border-[#F2EBD8] rounded-[20px] px-2 py-1";

@@ -3,28 +3,38 @@ import { Map, Marker, useMarkerRef } from "@vis.gl/react-google-maps";
 
 export default function StaticMap() {
   const [markerRef, marker] = useMarkerRef();
-  // const [newMarkerPosition, setNewMarkerPosition] = useState({ lat: 30.3753, lng: 69.3451 });
-;
+  const [currentLocation, setCurrentLocation] = useState(null);
 
-  // useEffect(() => {
-  //   if (marker) {
-  //     // Log marker's position
-  //     console.log('Marker position:', marker.getPosition());
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrentLocation({ lat: latitude, lng: longitude });
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+    }
+  };
 
-  //     // Update marker position
-  //     marker.setPosition(newMarkerPosition);
-  //   }
-  // }, [marker, newMarkerPosition]);
+  useEffect(() => {
+    getCurrentLocation();
+  }, []);
 
   return (
     <Map
       className={"w-full h-[100vh] md:h-full"}
-      defaultCenter={{ lat: 22.54992, lng: 0 }}
+      defaultCenter={{ lat: 40.54992, lng: 44.54992 }}
       defaultZoom={3}
       gestureHandling={"greedy"}
-      disableDefaultUI={true}>
+      disableDefaultUI={true}
+    >
       {/* Render the Marker component with the markerRef */}
-      <Marker ref={markerRef} position={{ lat: 53.54992, lng: 10.00678 }} />
+      {currentLocation && (
+        <Marker ref={markerRef} position={currentLocation} />
+      )}
     </Map>
   );
 }

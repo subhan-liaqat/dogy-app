@@ -14,8 +14,8 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat()
 
-prompt = f"{result} this the given data .on the basis of that create a friendly response to the user telling him about the  distance between two places and whether the desired spot lies between those places"
+# prompt = f"{result} this the given data of coordinated of two places and whether the place lies between these two locations. on the basis of that create a friendly response to the user telling him about the  distance between two places and whether the desired spot lies between those places"
+prompt = f"{result} This is the data you provided. As your helpful assistant, I'll provide you with the information you need. Let me find the distance between the two places and check if the desired location is found. Give me a moment."
 
-message = input('You :')
-response = chat.send_message(message)
+response = chat.send_message(prompt)
 print("Gemini:" + response.text)

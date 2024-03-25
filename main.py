@@ -2,18 +2,14 @@ from fastapi import FastAPI, HTTPException, Request
 import requests
 from dotenv import load_dotenv
 import os
-from DogyExercise import GetExercises
+from dogy_excercise import GetExercises
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-
-
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = FastAPI()
-
-
 
 origins = [
     "*",
@@ -28,15 +24,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 @app.get("/")
 async def main():
     return {"message": "Hello World"}
-
-
-
-
 
 base_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
 api_key = os.getenv("GOOGLE_Maps_API_KEY")
@@ -76,7 +66,6 @@ class DogySensitivityModel(BaseModel):
     noise: bool
     none: bool 
 
-
 class DogData(BaseModel):
     DogeSize: str
     DogyEnergyLevel: str
@@ -84,8 +73,6 @@ class DogData(BaseModel):
     DogyAge: str
     Latitude: float  # Added for location
     Longitude: float  # Added for location
-
-
 
 #async def get_exercise(data: DogData):
     # Extract properties directly from the data model instance
@@ -95,8 +82,6 @@ class DogData(BaseModel):
   #  dogy_age = data.DogyAge
     
     # Assuming GetExercises is a function that you have defined elsewhere
-
-
 
 @app.post("/dog-profile/")
 async def get_exercise_places(data: DogData):

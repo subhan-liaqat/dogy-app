@@ -14,7 +14,7 @@ class LocationCoordinates:
         """
         geocode_result = self.gmaps.geocode(location_name)
         if geocode_result:
-            return geocode_result[0]['geometry']['location']
+            return geocode_result[0]['geometry'['location']
         else:
             return None
 

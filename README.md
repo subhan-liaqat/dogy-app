@@ -1,4 +1,4 @@
-## Dog Nutrition and Exercise Guide API
+## Dogy Walk Generator
 # Introduction
 This FastAPI application is designed to assist dog owners by providing detailed nutrition information for dog food, personalized exercise recommendations based on the dog's profile, and locations for nearby dog-friendly exercise areas. It leverages the Google Places API for fetching location data and includes features for analyzing dog food nutrition through uploaded images.
 
